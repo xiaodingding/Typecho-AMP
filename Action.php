@@ -109,7 +109,7 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
                 'isMarkdown'=>$this->article['isMarkdown'],
                 'imgData'=>$this->GetPostImg(),//MIP页面的结果化数据可以没有图片
                 'APPID'=>Helper::options()->plugin('AMP')->baiduAPPID,
-                'mip_stats_token'=> trim(Helper::options()->plugin('AMP')->mip_stats_token),
+                'mip_stats_token'=>Helper::options()->plugin('AMP')->mip_stats_token,
                 'desc'=>self::cleanUp($this->article['text']),
                 'publisher'=>Helper::options()->title,
                 'MIPtext'=>$this->MIPInit($this->article['text']),
@@ -202,9 +202,9 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
                 'AMPtext'=>$this->AMPInit($this->article['text']),
                 'version'=>$this->version
             );
-            //AMP页面的结果化数据必须有图片
+            //MIP页面的结果化数据必须有图片
             if(!is_array($AMPpage['imgData'])){
-                $AMPpage['imgData']=self::getSizeArr($AMPpage['LOGO'],'1200','1200');//如果找不到图片就用LOGO
+                $AMPpage['imgData']=self::getSizeArr($AMPpage['LOGO'],'200','200');//如果找不到图片就用LOGO
             }
             ob_start();
             require_once ('templates/AMPpage.php');
@@ -241,8 +241,8 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         if (is_null($options->plugin('AMP')->baiduAPPID) or is_null($options->plugin('AMP')->baiduTOKEN)) {
             throw new Typecho_Plugin_Exception(_t('参数未正确配置，自动提交失败'));
         }else{
-            $appid = trim($options->plugin('AMP')->baiduAPPID);//过滤空格
-            $token = trim($options->plugin('AMP')->baiduTOKEN);//过滤空格
+            $appid = $options->plugin('AMP')->baiduAPPID;
+            $token = $options->plugin('AMP')->baiduTOKEN;
             $api = "http://data.zz.baidu.com/urls?appid={$appid}&token={$token}&type=realtime";//构建实时提交的地址
         }
 
@@ -469,7 +469,6 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         $text = str_replace('<!- toc end ->', '', $text);
         $text = str_replace('<style', '<style mip-custom" ', $text);
         $text = str_replace('javascript:content_index_toggleToc()', '#', $text);
-        $text = $this->stripHtmlTags(array('font','color','input','size'),$text,true) ;//清理指定HTML标签
         return $text;
     }
 
@@ -484,7 +483,6 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         $text = str_replace('<style', '<style amp-custom" ', $text);
         $text = str_replace('<!- toc end ->', '', $text);
         $text = str_replace('javascript:content_index_toggleToc()', '#', $text);
-        $text = $this->stripHtmlTags(array('font','color','input','size'),$text,true) ;//清理指定HTML标签
         return $text;
     }
 
@@ -505,16 +503,15 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
                 }
                 list($width, $height, $type, $attr) = @getimagesize($url);
                 if (!isset($width)) {
-                    $width = '1200';
+                    $width = '500';
                 }
                 if (!isset($height)) {
-                    $height = '800';
+                    $height = '700';
                 }
                 return "<img width=\"{$width}\" height=\"{$height}\" src=\"{$m[1]}\"";
             },
             $html
         );
-
         return $html;
     }
 
@@ -574,16 +571,7 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
     }
 
 
-
-    /**
-     * 截取功能函数
-     * @param string $text      截取的对象
-     * @param string $length    保留长度
-     * @param string $replace   替换结尾表示
-     * @param string $encoding  编码类型
-     * @return mixed
-     */
-
+    //截取功能函数
     private function substrFormat($text, $length, $replace = '...', $encoding = 'UTF-8')
     {
         if ($text && mb_strlen($text, $encoding) > $length) {
@@ -592,36 +580,8 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         return $text;
     }
 
-    /**
-     * 清理指定HTML标签函数
-     * @param array  $tags    删除的标签 array('font','color','input','size')
-     * @param string $str     html字符串
-     * @param bool   $type    是否保留标签的内容
-     * @return mixed
-     */
-    private function stripHtmlTags($tags, $str, $content=false)
-    {
-        $html = [];
-        if($content){
-            foreach ($tags as $tag) {
-                $html[] = "/(<(?:\/" .$tag. "|" .$tag. ")[^>]*>)/is";
-            }
-        }else{
-            foreach ($tags as $tag) {
-                $html[] = '/<' .$tag. '.*?>[\s|\S]*?<\/' .$tag. '>/is';
-                $html[] = '/<' .$tag. '.*?>/is';
-            }
-        }
-        $data = preg_replace($html, '', $str);
-        return $data;
-    }
 
-
-
-    /**
-     * 根据自定义文章路径生成amp/mip的地址规则
-     * @return mixed
-     */
+    //根据自定义文章路径生成amp/mip的地址规则
     private function getUrlRule()
     {
         //获取自定义文章路径的最后一层
@@ -653,12 +613,7 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         return $slugtemp;
     }
 
-
-    /**
-     * 清理文章摘要内容
-     * @param array  $desc  文章内容
-     * @return mixed
-     */
+    //清理文章摘要内容
     private static function cleanUp($desc){
         $desc= str_replace(array("\r\n", "\r", "\n"), "", strip_tags($desc));//获取纯内容后去除换行
         $desc=mb_substr($desc, 0, 150).'...';//截取前150个字符
@@ -674,15 +629,12 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
             $time = (int)Helper::options()->plugin('AMP')->cacheTime;
             $expire = $time * 60 * 60;
             if (is_array($cache)) $cache = json_encode($cache);
-//            $table = $this->tablename;
+            $table = $this->tablename;
             $time = time();
 
-//            $cache = addslashes($cache);
-//            $sql = "REPLACE INTO $table  (`hash`,`cache`,`dateline`,`expire`) VALUES ('$key','$cache','$time','$expire')";
-//            $installDb->query($sql);
-
-            $installDb->query($installDb->insert($this->tablename)->rows(array("hash"=>$key,"cache"=>$cache,"dateline"=>$time,"expire"=>$expire)));//更换写入方法
-
+            $cache = addslashes($cache);
+            $sql = "REPLACE INTO $table  (`hash`,`cache`,`dateline`,`expire`) VALUES ('$key','$cache','$time','$expire')";
+            $installDb->query($sql);
         }else{
             return null;
         }
@@ -691,15 +643,17 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
     private function del($key){
         if(Helper::options()->plugin('AMP')->cacheTime>0) {
             $installDb = $this->db;
+            $tablename = $this->tablename;
             if (is_array($key)) {
                 foreach ($key as $k => $v) {
                     $this->del($v);
                 }
             } else {
                 if ($key == '*') {
-                    $installDb->query($installDb->delete($this->tablename)->where("1=1"));
+                    $installDb->query("DELETE FROM $tablename WHERE 1=1 ");
                 } else {
-                    $installDb->query($installDb->delete($this->tablename)->where('hash = ?', $key)->limit(1));
+                    $delete = $installDb->delete($tablename)->where('hash = ?', $key)->limit(1);
+                    $installDb->query($delete);
                 }
             }
         }else{
@@ -710,8 +664,9 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
     private function get($key){
         if(Helper::options()->plugin('AMP')->cacheTime>0) {
             $installDb = $this->db;
+            $tablename = $this->tablename;
 
-            $condition = $installDb->select('cache', 'dateline', 'expire')->from($this->tablename)->where('hash = ?', $key);
+            $condition = $installDb->select('cache', 'dateline', 'expire')->from($tablename)->where('hash = ?', $key);
             $row = $installDb->fetchRow($condition);
             if (!$row) return;
             if (time() - $row['dateline'] > $row['expire']) $this->del($key);

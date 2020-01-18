@@ -26,12 +26,15 @@ if (isset($_GET['send'])) {
     } elseif ((isset($_GET['type']) and $_GET['type'] == 'mip') OR (isset($_POST['type']) and $_POST['type'] == 'mip')) {
         $sendtype = 'mip';
         $type = 'mip';
+    } elseif ((isset($_GET['type']) and $_GET['type'] == 'smmip') OR (isset($_POST['type']) and $_POST['type'] == 'smmip')) {
+        $sendtype = 'mip';
+        $type = 'smmip';
     } elseif ((isset($_GET['type']) and $_GET['type'] == 'batch') OR (isset($_POST['type']) and $_POST['type'] == 'batch')) {
         $sendtype = 'mip';
         $type = 'batch';
         if (isset(Helper::options()->plugin('AMP')->baiduAPPID) and isset(Helper::options()->plugin('AMP')->baiduTOKEN)) {
-            $appid = trim(Helper::options()->plugin('AMP')->baiduAPPID);//过滤空格
-            $token = trim(Helper::options()->plugin('AMP')->baiduTOKEN);//过滤空格
+            $appid = Helper::options()->plugin('AMP')->baiduAPPID;
+            $token = Helper::options()->plugin('AMP')->baiduTOKEN;
             $api = "http://data.zz.baidu.com/urls?appid={$appid}&token={$token}&type=batch";
         } else {
             throw new Typecho_Widget_Exception('未设置熊掌号参数！');
@@ -45,14 +48,25 @@ if (isset($_GET['send'])) {
 
 
     //接口类型
-    if (!isset($api)) {
-        if (empty(Helper::options()->plugin('AMP')->baiduAPI)) {
-            throw new Typecho_Widget_Exception('未设置MIP/AMP推送接口调用地址!');
-        } else {
-            $api = trim(Helper::options()->plugin('AMP')->baiduAPI); //过滤空格
-            $api = preg_replace("/&type=[a-z]+/", "&type={$sendtype}", $api);//替换接口中的类型
+    if (!isset($api))
+    {
+        if(('mip' == $type)||('amp' == $type) ||('batch' ==  $type))
+        {
+            if (empty(Helper::options()->plugin('AMP')->baiduAPI)) {
+                throw new Typecho_Widget_Exception('未设置MIP/AMP推送接口调用地址!');
+            } else {
+                $api = Helper::options()->plugin('AMP')->baiduAPI;
+                $api = preg_replace("/&type=[a-z]+/", "&type={$sendtype}", $api);//替换接口中的类型
 
+            }
+        }else if('smmip' == $type){
+            if (empty(Helper::options()->plugin('AMP')->SMAPI)) {
+                throw new Typecho_Widget_Exception('神马未设置MIP推送接口调用地址!');
+            } else {
+                $api = Helper::options()->plugin('AMP')->SMAPI;
+            }
         }
+
     }
 
     $urls = array();
@@ -69,7 +83,6 @@ if (isset($_GET['send'])) {
         $http->setData(implode("\n", $urls));
         $http->setHeader('Content-Type', 'text/plain');
         try {
-            $api = trim($api); //经过单步调试，发现api这个字符串前面多了一个空格，导致parse_url无法解析正确的`host`
             $result = $http->send($api);
         } catch (Exception $e) {
             throw new Typecho_Plugin_Exception(_t('对不起, 您的主机不支持远程访问。<br>请检查 curl 扩展、allow_url_fopen和防火墙设置！<br><hr>出错信息：'.$e->getMessage()));
@@ -81,28 +94,55 @@ if (isset($_GET['send'])) {
 //    string(43) "{"success_batch":20,"remain_batch":4999960}"
 
         $obj = json_decode($result, true);
-        $name = "success_{$type}";
 
-        if (isset($obj[$name])) {
 
-            echo '<hr>';
-            echo "第{$page}页提交成功,";
-            $count = $obj["remain_{$type}"];
-            echo "还可提交{$count}条URL,准备提交下一页>>>";
-            $page += 1;
+        if(('mip' == $type)||('amp' == $type) ||('batch' ==  $type))
+        {
+            $name = "success_{$type}";
+            if (isset($obj[$name])) {
 
-            ?>
-            <script language="JavaScript">
-                window.setTimeout("location='<?php $options->adminUrl('extending.php?panel=AMP/Links.php' . "&send=1&type={$type}&page={$page}");
-                    ?>'", 2000);
-            </script>
-            未自动跳转请点击<a
-                    href="<?php $options->adminUrl('extending.php?panel=AMP/Links.php' . "&send=1&type={$type}&page={$page}"); ?>">这里</a>
-            <?php
-        } else {
-            echo "<hr>错误提示：";
-            print_r($obj);
-            echo "<br>提交失败，请检查提交地址。如有必要，请将错误提示<a href='https://github.com/holmesian/Typecho-AMP/issues'>反馈给作者</a>";
+                echo '<hr>';
+                echo "第{$page}页提交成功,";
+                print_r($obj);
+                $count = $obj["remain_{$type}"];
+                echo "还可提交{$count}条URL,准备提交下一页>>>";
+                $page += 1;
+
+                ?>
+                <script language="JavaScript">
+                    window.setTimeout("location='<?php $options->adminUrl('extending.php?panel=AMP/Links.php' . "&send=1&type={$type}&page={$page}");
+                        ?>'", 2000);
+                </script>
+                未自动跳转请点击<a
+                        href="<?php $options->adminUrl('extending.php?panel=AMP/Links.php' . "&send=1&type={$type}&page={$page}"); ?>">这里</a>
+                <?php
+            } else {
+                echo "<hr>错误提示：";
+                print_r($obj);
+                echo "<br>提交失败，请检查提交地址。如有必要，请将错误提示<a href='https://github.com/holmesian/Typecho-AMP/issues'>反馈给作者</a>";
+            }
+        }else if('smmip' == $type)
+        {
+            if(200 == isset($obj["returnCode"] ))
+            {
+                echo '<hr>';
+                echo "第{$page}页提交成功,";
+                echo "准备提交下一页>>>";
+                $page += 1;
+
+                ?>
+                <script language="JavaScript">
+                    window.setTimeout("location='<?php $options->adminUrl('extending.php?panel=AMP/Links.php' . "&send=1&type={$type}&page={$page}");
+                        ?>'", 2000);
+                </script>
+                未自动跳转请点击<a
+                        href="<?php $options->adminUrl('extending.php?panel=AMP/Links.php' . "&send=1&type={$type}&page={$page}"); ?>">这里</a>
+                <?php
+            }else{
+                echo "<hr>错误提示：";
+                print_r($obj);
+                echo "<br>提交失败，请检查提交地址。如有必要，请将错误提示<a href='https://github.com/holmesian/Typecho-AMP/issues'>反馈给作者</a>";
+            }
         }
     } else {
         echo "已全部提交完成";
@@ -122,8 +162,9 @@ if (isset($_GET['send'])) {
                 <form action="<?php $options->adminUrl('extending.php?panel=AMP/Links.php&send=1'); ?>" method="POST">
                     <div class="operate" style="text-align: center;">
                         <select name="type" style="width:200px;text-align-last: center;">
-                            <option value="amp">AMP</option>
-                            <option value="mip">MIP</option>
+                            <option value="amp">百度AMP</option>
+                            <option value="mip">百度MIP</option>
+                            <option value="smmip">神马MIP</option>
                             <option value="batch">熊掌号</option>
                         </select>
                         <button type="submit" class="btn btn-s"><?php _e('开始提交'); ?></button>

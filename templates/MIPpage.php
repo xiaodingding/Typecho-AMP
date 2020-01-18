@@ -48,15 +48,15 @@
             <div class="meta"><?php echo($MIPpage['date']); ?></div>
             <div class="article-content">
                 <?php echo($MIPpage['MIPtext']); ?>
-                <div class="tip">当前页面是本站的「<a href="https://www.mipengine.org/">Baidu MIP</a>」版。发表评论请点击：<a
+                <div class="tip">当前页面是本站的「Baidu MIP」版。发表评论请点击：<a
                         href="<?php echo($MIPpage['permalink']); ?>">完整版 »</a></div>
                 <?php if(!$MIPpage['isMarkdown']){echo('<div class="tip-error">因本文不是用Markdown格式的编辑器书写的，转换的页面可能不符合MIP标准。</div>');} ?>
         </article>
 
     </div>
 </div>
-<div class="footer"><p>&copy; <?php echo date('Y'); ?> <a data-type="mip" href="https://github.com/holmesian/Typecho-AMP">MIP for Typecho</a> v<?php echo(AMP_Plugin::$version) ?>
-        , Designed by  <a href="https://holmesian.org/" target="_blank">Holmesian</a>.</p></div>
+<div class="footer"><p>© 2018 <a data-type="mip" href="https://github.com/holmesian/Typecho-AMP">MIP for Typecho</a> v<?php echo(AMP_Plugin::$version) ?>
+        , Designed by  <a href="https://www.ddsiot.cn/" target="_blank">ddsiot</a>.</p></div>
 <mip-fixed type="gototop">
     <mip-gototop></mip-gototop>
 </mip-fixed>
