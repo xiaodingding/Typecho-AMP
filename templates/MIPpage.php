@@ -55,7 +55,7 @@
 
     </div>
 </div>
-<div class="footer"><p>© 2018 <a data-type="mip" href="https://github.com/holmesian/Typecho-AMP">MIP for Typecho</a> v<?php echo(AMP_Plugin::$version) ?>
+<div class="footer"><p>© 2018 <a data-type="mip" href="https://github.com/xiaodingding/Typecho-AMP">MIP for Typecho</a> v<?php echo(AMP_Plugin::$version) ?>
         , Designed by  <a href="https://www.ddsiot.cn/" target="_blank">ddsiot</a>.</p></div>
 <mip-fixed type="gototop">
     <mip-gototop></mip-gototop>

@@ -60,7 +60,7 @@
     <div><p class="info">当前页面是本站的「Google AMP」版。查看和发表评论请点击：<a
                     href="<?php echo($this->baseurl); ?>">完整版 »</a></p></div>
 
-    <div class="footer"><p>© 2018 <a data-type="amp" href="https://github.com/holmesian/Typecho-AMP">AMP for Typecho</a> v<?php echo(AMP_Plugin::$version); ?>
+    <div class="footer"><p>© 2018 <a data-type="amp" href="https://github.com/xiaodingding/Typecho-AMP">AMP for Typecho</a> v<?php echo(AMP_Plugin::$version); ?>
             , Designed by  <a href="https://www.ddsiot.cn/" target="_blank">ddsiot</a>.</p></div>
 </footer>
 </body>
