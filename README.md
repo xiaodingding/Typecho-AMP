@@ -13,7 +13,7 @@ Google AMP 、Baidu MIP、神马MIP的Tyoecho插件
 - 生成AMP/MIP的SiteMap，及所有ULR的纯文本列表(支持分页)。
 
 - 生成AMP版的首页。
- 
+
 - 后台批量提交URL到Baidu，可选手动或自动。
 
 - MIP页面完美支持百度熊掌号页面标准，新发表文章自动提交到熊掌号。
@@ -73,6 +73,9 @@ AMP页面为 http(s)://xxx/amp/slug/
 MIP页面为 http(s)://xxx/mip/slug/
 
 
+参考：
+https://github.com/holmesian/Typecho-AMP
 
 
-
+食用方法：
+https://www.ddsiot.cn/archives/310.html
